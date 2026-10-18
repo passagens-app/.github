@@ -1,0 +1,28 @@
+name: Bug
+description: Comportamento incorreto do sistema
+type: Bug
+projects: ["passagens-app/1"]
+body:
+  - type: textarea
+    id: passos
+    attributes:
+      label: Passos para reproduzir
+    validations:
+      required: true
+  - type: textarea
+    id: esperado
+    attributes:
+      label: Esperado × obtido
+    validations:
+      required: true
+  - type: input
+    id: logs
+    attributes:
+      label: Link dos logs (CloudWatch) ou correlation_id
+  - type: dropdown
+    id: severidade
+    attributes:
+      label: Severidade
+      options: [Alta - coleta ou alertas parados, Média - funcionalidade degradada, Baixa - cosmético]
+    validations:
+      required: true

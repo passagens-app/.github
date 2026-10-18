@@ -1,0 +1,31 @@
+name: Fonte quebrada
+description: Uma fonte de dados parou de funcionar (parser, bloqueio ou mudança no site)
+type: Bug
+labels: ["area:coleta"]
+projects: ["passagens-app/1"]
+body:
+  - type: dropdown
+    id: fonte
+    attributes:
+      label: Fonte
+      options: [Travelpayouts, Google Flights, Smiles, LATAM Pass, Azul Fidelidade, Shopping Livelo, Shopping Esfera, Shopping Azul, RSS, PTAX]
+    validations:
+      required: true
+  - type: input
+    id: desde
+    attributes:
+      label: Desde quando (dd/mm/aaaa hh:mm BRT)
+    validations:
+      required: true
+  - type: dropdown
+    id: sintoma
+    attributes:
+      label: Sintoma
+      options: [Parser falhando, 403/429, CAPTCHA ou desafio, Resposta vazia, Timeout, Outro]
+    validations:
+      required: true
+  - type: textarea
+    id: evidencias
+    attributes:
+      label: Evidências
+      description: Link do screenshot no S3, trecho de log, métrica do circuit breaker.

@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentação do projeto
+    url: https://github.com/passagens-app/passagens-docs
+    about: Requisitos, backlog, roadmap e custos

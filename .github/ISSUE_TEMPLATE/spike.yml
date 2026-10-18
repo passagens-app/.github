@@ -1,0 +1,25 @@
+name: Spike
+description: Investigação com timebox e decisão esperada
+type: Spike
+projects: ["passagens-app/1"]
+body:
+  - type: textarea
+    id: pergunta
+    attributes:
+      label: Pergunta a responder
+    validations:
+      required: true
+  - type: input
+    id: timebox
+    attributes:
+      label: Timebox
+      placeholder: 2 dias
+    validations:
+      required: true
+  - type: textarea
+    id: decisao
+    attributes:
+      label: Decisão esperada
+      description: Opções possíveis e onde a decisão será registrada (ADR em passagens-docs).
+    validations:
+      required: true

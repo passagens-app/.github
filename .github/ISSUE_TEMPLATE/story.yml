@@ -1,0 +1,43 @@
+name: User Story
+description: História de usuário com critérios de aceite
+type: Story
+projects: ["passagens-app/1"]
+body:
+  - type: textarea
+    id: historia
+    attributes:
+      label: História
+      placeholder: Como <perfil>, quero <capacidade>, para <benefício>.
+    validations:
+      required: true
+  - type: textarea
+    id: criterios
+    attributes:
+      label: Critérios de aceite
+      description: Itens verificáveis; cada um vira pelo menos um teste.
+      value: |
+        - [ ]
+    validations:
+      required: true
+  - type: textarea
+    id: tasks
+    attributes:
+      label: Tasks
+      description: Use [web], [api], [platform]… para tasks de outro repositório.
+      value: |
+        - [ ]
+  - type: input
+    id: requisitos
+    attributes:
+      label: Requisitos
+      placeholder: RF-11, RNF-05
+  - type: dropdown
+    id: fase
+    attributes:
+      label: Fase
+      options: [F0 Fundação, F1 MVP, F2 Portal, F3 Análises, F4 Milhas, F5 Operação]
+  - type: dropdown
+    id: tamanho
+    attributes:
+      label: Tamanho
+      options: [XS, S, M, L, XL]
