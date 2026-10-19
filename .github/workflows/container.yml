@@ -1,0 +1,71 @@
+name: container
+
+on:
+  workflow_call:
+    inputs:
+      ecr-repository:
+        description: Nome do repositório ECR (por exemplo, passagens-collectors-scraper).
+        type: string
+        required: true
+      context:
+        description: Contexto do build, relativo à raiz do repositório.
+        type: string
+        default: .
+      dockerfile:
+        description: Caminho do Dockerfile.
+        type: string
+        default: Dockerfile
+      aws-region:
+        description: Região AWS.
+        type: string
+        default: us-east-1
+      deploy-role-arn:
+        description: Role assumida no push da main (variável AWS_ROLE_ARN_DEPLOY).
+        type: string
+        required: true
+    outputs:
+      image-uri:
+        description: URI da imagem publicada (tag = SHA do commit), para o Terraform da Lambda.
+        value: ${{ jobs.build.outputs.image-uri }}
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      image-uri: ${{ steps.uri.outputs.image-uri }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd
+        with:
+          role-to-assume: ${{ inputs.deploy-role-arn }}
+          role-session-name: gha-container-${{ github.run_id }}
+          aws-region: ${{ inputs.aws-region }}
+
+      - id: ecr
+        uses: aws-actions/amazon-ecr-login@03f1aad4c6c7ffd436567f42f9384779290529bd
+
+      - id: uri
+        run: echo "image-uri=${{ steps.ecr.outputs.registry }}/${{ inputs.ecr-repository }}:${{ github.sha }}" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1
+
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069
+
+      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc
+        with:
+          context: ${{ inputs.context }}
+          file: ${{ inputs.dockerfile }}
+          platforms: linux/arm64
+          push: true
+          provenance: false
+          tags: ${{ steps.uri.outputs.image-uri }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
