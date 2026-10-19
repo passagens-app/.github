@@ -1,0 +1,71 @@
+name: python
+
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        description: Versão do Python.
+        type: string
+        default: "3.13"
+      source-package:
+        description: Pacote em src/ copiado para o zip da Lambda (por exemplo, collectors). Vazio para não empacotar.
+        type: string
+        default: ""
+      artifact-name:
+        description: Nome do artefato com o pacote (dist/lambda.zip).
+        type: string
+        default: lambda-package
+      run-mypy:
+        description: Executa o mypy em src/.
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  python:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884
+        with:
+          python-version: ${{ inputs.python-version }}
+          enable-cache: true
+
+      - name: dependências
+        run: uv sync --frozen
+
+      - name: lint
+        run: |
+          uv run ruff check .
+          uv run ruff format --check .
+
+      - name: tipos
+        if: inputs.run-mypy
+        run: uv run mypy src
+
+      - name: testes
+        run: uv run pytest -q
+
+      - name: empacotar Lambda (arm64)
+        if: inputs.source-package != ''
+        run: |
+          rm -rf build dist && mkdir -p build/package dist
+          uv export --frozen --no-dev --no-emit-project --no-hashes -o build/requirements.txt
+          uv pip install --target build/package --python-platform aarch64-manylinux2014 \
+            --python-version "${{ inputs.python-version }}" --only-binary=:all: -r build/requirements.txt
+          cp -r "src/${{ inputs.source-package }}" build/package/
+          find build/package -name '__pycache__' -type d -prune -exec rm -rf {} +
+          find build/package -exec touch -h -t 202001010000 {} +
+          (cd build/package && find . -type f | LC_ALL=C sort | zip -X -q ../../dist/lambda.zip -@)
+          ls -lh dist/lambda.zip
+
+      - if: inputs.source-package != ''
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: dist/lambda.zip
+          retention-days: 7
+          if-no-files-found: error
