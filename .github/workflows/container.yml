@@ -20,7 +20,7 @@ on:
         type: string
         default: us-east-1
       deploy-role-arn:
-        description: Role assumida no push da main (variável AWS_ROLE_ARN_DEPLOY).
+        description: Role assumida no push ou no disparo manual na main (variável AWS_ROLE_ARN_DEPLOY).
         type: string
         required: true
     outputs:
@@ -33,7 +33,7 @@ permissions:
 
 jobs:
   build:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     permissions:
       contents: read
